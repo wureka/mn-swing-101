@@ -1,0 +1,67 @@
+plugins {
+    id("groovy")
+    id("com.github.johnrengelman.shadow") version "7.1.0"
+    id("io.micronaut.application") version "3.0.2"
+}
+
+version = "0.1"
+group = "com.example"
+
+repositories {
+    mavenCentral()
+}
+
+micronaut {
+    testRuntime("spock2")
+    processing {
+        incremental(true)
+        annotations("com.example.*")
+    }
+}
+
+dependencies {
+    annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("info.picocli:picocli-codegen")
+    annotationProcessor("io.micronaut:micronaut-http-validation")
+    implementation("info.picocli:picocli")
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut:micronaut-runtime")
+    implementation("io.micronaut.picocli:micronaut-picocli")
+    implementation("jakarta.annotation:jakarta.annotation-api")
+    compileOnly("org.projectlombok:lombok")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("com.h2database:h2")
+    compileOnly("org.graalvm.nativeimage:svm")
+
+    implementation("io.micronaut:micronaut-validation")
+
+}
+
+
+application {
+    mainClass.set("com.example.MnSwing101Command")
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("11")
+    targetCompatibility = JavaVersion.toVersion("11")
+}
+
+jar {
+    enabled = false
+    // archiveClassifier.set(null)
+    dependsOn(shadowJar {     archiveClassifier.set(null) })
+}
+graalvmNative {
+
+    binaries {
+        main {
+            imageName.set('MnSwing101Command')
+            buildArgs.addAll(
+                    ['--verbose', '-Djava.awt.headless=false',
+                     '-H:ConfigurationFileDirectories=META-INF/native-image',
+                     '--no-server', '--no-fallback'
+                    ]
+            )
+        }
+    }
+}
